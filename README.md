@@ -1,0 +1,1 @@
+`jslibs` is a collection of javascript libraries for use in other projects.
