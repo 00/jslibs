@@ -34,7 +34,7 @@ $.widget( "mobile.dialog", $.mobile.widget, {
 			  unless a data-transition is specified on the link/form
 			- if the click was on the close button, or the link has a data-rel="back" it'll go back in history naturally
 		*/
-		$el.bind( "vclick submit", function( event ) {
+		$el/*.bind( "vclick submit", function( event ) {
 			var $target = $( event.target ).closest( event.type === "vclick" ? "a" : "form" ),
 				active;
 
@@ -46,7 +46,7 @@ $.widget( "mobile.dialog", $.mobile.widget, {
 					.attr( "data-" + $.mobile.ns + "direction", "reverse" );
 			}
 		})
-		.bind( "pagehide", function() {
+		*/.bind( "pagehide", function() {
 			$( this ).find( "." + $.mobile.activeBtnClass ).removeClass( $.mobile.activeBtnClass );
 		});
 	},
