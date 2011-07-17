@@ -46,7 +46,13 @@ _.extend(Store.prototype, {
 
   // Retrieve a model from `this.data` by id.
   find: function(model) {
-    return JSON.parse(localStorage.getItem(this.name+"-"+model.id));
+    item = localStorage.getItem(this.name+"-"+model.id);
+    try {
+      return JSON.parse(item);
+    }
+    catch (err) {
+      console.error(err);
+    }
   },
 
   // Return the array of all models currently in storage.
