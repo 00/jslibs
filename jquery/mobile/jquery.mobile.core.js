@@ -9,56 +9,61 @@
 
 (function( $, window, undefined ) {
 
-	// jQuery.mobile configurable options
+	//jQuery.mobile configurable options
 	$.extend( $.mobile, {
 
-		// Namespace used framework-wide for data-attrs. Default is no namespace
+		//namespace used framework-wide for data-attrs. Default is no namespace
 		ns: "",
 
-		// Define the url parameter used for referencing widget-generated sub-pages.
-		// Translates to to example.html&ui-page=subpageIdentifier
-		// hash segment before &ui-page= is used to make Ajax request
+		//define the url parameter used for referencing widget-generated sub-pages.
+		//Translates to to example.html&ui-page=subpageIdentifier
+		//hash segment before &ui-page= is used to make Ajax request
 		subPageUrlKey: "ui-page",
 
-		// Anchor links with a data-rel, or pages with a	 data-role, that match these selectors will be untrackable in history
-		// (no change in URL, not bookmarkable)
+		//anchor links with a data-rel, or pages with a	 data-role, that match these selectors will be untrackable in history
+		//(no change in URL, not bookmarkable)
 		nonHistorySelectors: "dialog",
 
-		// Class assigned to page currently in view, and during transitions
+		//class assigned to page currently in view, and during transitions
 		activePageClass: "ui-page-active",
 
-		// Class used for "active" button state, from CSS framework
+		//class used for "active" button state, from CSS framework
 		activeBtnClass: "ui-btn-active",
 
-		// Automatically handle clicks and form submissions through Ajax, when same-domain
+		//automatically handle clicks and form submissions through Ajax, when same-domain
 		ajaxEnabled: true,
+		
+		//When enabled, clicks and taps that result in Ajax page changes will happen slightly sooner on touch devices.
+		//Also, it will prevent the address bar from appearing on platforms like iOS during page transitions.
+		//This option has no effect on non-touch devices, but enabling it may interfere with jQuery plugins that bind to click events
+		useFastClick: true,
 
-		// Automatically load and show pages based on location.hash
+		//automatically load and show pages based on location.hash
 		hashListeningEnabled: true,
 
-		// Set default page transition - 'none' for no transitions
+		//set default page transition - 'none' for no transitions
 		defaultPageTransition: "slide",
-
-		// Minimum scroll distance that will be remembered when returning to a page
+		
+		//minimum scroll distance that will be remembered when returning to a page
 		minScrollBack: screen.height / 2,
 
-		// Set default dialog transition - 'none' for no transitions
+		//set default dialog transition - 'none' for no transitions
 		defaultDialogTransition: "pop",
 
-		// Show loading message during Ajax requests
-		// if false, message will not appear, but loading classes will still be toggled on html el
+		//show loading message during Ajax requests
+		//if false, message will not appear, but loading classes will still be toggled on html el
 		loadingMessage: "loading",
 
-		// Error response message - appears when an Ajax page request fails
+		//error response message - appears when an Ajax page request fails
 		pageLoadErrorMessage: "Error Loading Page",
 
-		// Support conditions that must be met in order to proceed
-		// default enhanced qualifications are media query support OR IE 7+
+		//support conditions that must be met in order to proceed
+		//default enhanced qualifications are media query support OR IE 7+
 		gradeA: function(){
 			return $.support.mediaquery || $.mobile.browser.ie && $.mobile.browser.ie >= 7;
 		},
 
-		// TODO might be useful upstream in jquery itself ?
+		//TODO might be useful upstream in jquery itself ?
 		keyCode: {
 			ALT: 18,
 			BACKSPACE: 8,
@@ -94,9 +99,9 @@
 			WINDOWS: 91 // COMMAND
 		},
 
-		// Scroll page vertically: scroll to 0 to hide iOS address bar, or pass a Y value
+		//scroll page vertically: scroll to 0 to hide iOS address bar, or pass a Y value
 		silentScroll: function( ypos ) {
-			if ( $.type( ypos ) !== "number" ) {
+			if( $.type( ypos ) !== "number" ){
 				ypos = $.mobile.defaultHomeScroll;
 			}
 
@@ -105,52 +110,53 @@
 
 			setTimeout(function() {
 				window.scrollTo( 0, ypos );
-				$( document ).trigger( "silentscroll", { x: 0, y: ypos });
-			}, 20 );
+				$(document).trigger( "silentscroll", { x: 0, y: ypos });
+			},20);
 
 			setTimeout(function() {
 				$.event.special.scrollstart.enabled = true;
 			}, 150 );
 		},
 
-		// Take a data attribute property, prepend the namespace
+		// compile the namespace normalization regex once
+		normalizeRegex: /-([a-z])/g,
+
+		// take a data attribute property, prepend the namespace
 		// and then camel case the attribute string
-		nsNormalize: function( prop ) {
-			if ( !prop ) {
-				return;
-			}
+		nsNormalize: function(prop){
+			if(!prop) return;
 
 			return $.camelCase( $.mobile.ns + prop );
 		}
 	});
 
-	// Mobile version of data and removeData and hasData methods
-	// ensures all data is set and retrieved using jQuery Mobile's data namespace
-	$.fn.jqmData = function( prop, value ) {
-		return this.data( prop ? $.mobile.nsNormalize( prop ) : prop, value );
+	//mobile version of data and removeData and hasData methods
+	//ensures all data is set and retrieved using jQuery Mobile's data namespace
+	$.fn.jqmData = function( prop, value ){
+		return this.data( prop ? $.mobile.nsNormalize(prop) : prop, value );
 	};
 
-	$.jqmData = function( elem, prop, value ) {
-		return $.data( elem, $.mobile.nsNormalize( prop ), value );
+	$.jqmData = function( elem, prop, value ){
+		return $.data( elem, $.mobile.nsNormalize(prop), value );
 	};
 
-	$.fn.jqmRemoveData = function( prop ) {
-		return this.removeData( $.mobile.nsNormalize( prop ) );
+	$.fn.jqmRemoveData = function( prop ){
+		return this.removeData( $.mobile.nsNormalize(prop) );
 	};
 
-	$.jqmRemoveData = function( elem, prop ) {
-		return $.removeData( elem, $.mobile.nsNormalize( prop ) );
+	$.jqmRemoveData = function( elem, prop ){
+		return $.removeData( elem, $.mobile.nsNormalize(prop) );
 	};
 
-	$.jqmHasData = function( elem, prop ) {
-		return $.hasData( elem, $.mobile.nsNormalize( prop ) );
+	$.jqmHasData = function( elem, prop ){
+		return $.hasData( elem, $.mobile.nsNormalize(prop) );
 	};
 
 	// Monkey-patching Sizzle to filter the :jqmData selector
 	var oldFind = $.find;
 
 	$.find = function( selector, context, ret, extra ) {
-		selector = selector.replace(/:jqmData\(([^)]*)\)/g, "[data-" + ( $.mobile.ns || "" ) + "$1]");
+		selector = selector.replace(/:jqmData\(([^)]*)\)/g, "[data-" + ($.mobile.ns || "") + "$1]");
 
 		return oldFind.call( this, selector, context, ret, extra );
 	};
@@ -162,6 +168,6 @@
 	};
 
 	$.find.matchesSelector = function( node, expr ) {
-		return $.find( expr, null, null, [ node ] ).length > 0;
+		return $.find( expr, null, null, [node] ).length > 0;
 	};
 })( jQuery, this );
