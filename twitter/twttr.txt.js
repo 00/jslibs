@@ -89,6 +89,7 @@ if (!window.twttr) {
   twttr.txt.regexen.extractMentions = regexSupplant(/(^|[^a-zA-Z0-9_])(#{atSigns})([a-zA-Z0-9_]{1,20})(?=(.|$))/g);
   twttr.txt.regexen.extractReply = regexSupplant(/^(?:#{spaces})*#{atSigns}([a-zA-Z0-9_]{1,20})/);
   twttr.txt.regexen.listName = /[a-zA-Z][a-zA-Z0-9_\-\u0080-\u00ff]{0,24}/;
+  twttr.txt.regexen.extractMentionsOrLists = regexSupplant(/(^|[^a-zA-Z0-9_])(#{atSigns})([a-zA-Z0-9_]{1,20})(\/[a-zA-Z][a-zA-Z0-9_\-]{0,24})?(?=(.|$))/g);
 
   var nonLatinHashtagChars = [];
   // Cyrillic
@@ -121,7 +122,6 @@ if (!window.twttr) {
   twttr.txt.regexen.nonLatinHashtagChars = regexSupplant(nonLatinHashtagChars.join(""));
   // Latin accented characters (subtracted 0xD7 from the range, it's a confusable multiplication sign. Looks like "x")
   twttr.txt.regexen.latinAccentChars = regexSupplant("ÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏÐÑÒÓÔÕÖØÙÚÛÜÝÞßàáâãäåæçèéêëìíîïðñòóôõöøùúûüýþ\\303\\277");
-  twttr.txt.regexen.latenAccents = regexSupplant(/[#{latinAccentChars}]+/);
 
   twttr.txt.regexen.endScreenNameMatch = regexSupplant(/^(?:#{atSigns}|[#{latinAccentChars}]|:\/\/)/);
 
@@ -405,6 +405,10 @@ if (!window.twttr) {
 
     delete options.suppressNoFollow;
     delete options.suppressDataScreenName;
+    delete options.listClass;
+    delete options.usernameClass;
+    delete options.usernameUrlBase;
+    delete options.listUrlBase;
 
     return text.replace(twttr.txt.regexen.extractUrl, function(match, all, before, url, protocol, domain, path, queryString) {
       var tldComponents;
@@ -461,6 +465,35 @@ if (!window.twttr) {
 
     return possibleScreenNames;
   };
+
+  /**
+   * Extract list or user mentions.
+   * (Presence of listSlug indicates a list)
+   */
+  twttr.txt.extractMentionsOrListsWithIndices = function(text) {
+    if (!text) {
+      return [];
+    }
+
+    var possibleNames = [],
+        position = 0;
+
+    text.replace(twttr.txt.regexen.extractMentionsOrLists, function(match, before, atSign, screenName, slashListname, after) {
+      if (!after.match(twttr.txt.regexen.endScreenNameMatch)) {
+        slashListname = slashListname || '';
+        var startPosition = text.indexOf(atSign + screenName + slashListname, position);
+        position = startPosition + screenName.length + slashListname.length + 1;
+        possibleNames.push({
+          screenName: screenName,
+          listSlug: slashListname,
+          indices: [startPosition, position]
+        });
+      }
+    });
+
+    return possibleNames;
+  };
+
 
   twttr.txt.extractReplies = function(text) {
     if (!text) {
@@ -697,7 +730,7 @@ if (!window.twttr) {
       }
     }
 
-    return false
+    return false;
   };
 
   twttr.txt.isValidTweetText = function(text) {
